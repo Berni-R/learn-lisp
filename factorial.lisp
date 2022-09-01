@@ -1,0 +1,50 @@
+(defun fac (n)
+    (if (not (typep n '(integer 0 *)))
+        (error "factorial can only be calculated of zero and positive integers"))
+    (if (< n 2)
+        1
+        (* n (fac (decf n 1)))
+    )
+)
+
+(defun tailfac (n &optional (i 1))
+    (if (not (typep n '(integer 0 *)))
+        (error "factorial can only be calculated of zero and positive integers"))
+    (check-type i number)
+    (if (< n 2)
+        (return-from tailfac i)
+        (tailfac (1- n) (* n i))
+    )
+)
+(compile 'tailfac) ; sometimes seems to be done implicitly ... when?!
+
+(defun fac-efficient (n)
+    (if (not (typep n '(integer 0 *)))
+        (error "factorial can only be calculated of zero and positive integers"))
+    (let ((f 1))
+        (dotimes (i n)
+            (setf f (* f (1+ i))))
+        (return-from fac-efficient f)
+    )
+)
+
+
+(defun printfac (n &optional (f #'tailfac))
+    (let ((n! (funcall f n)))
+        (if (< n! 1e12)
+            (format t "~2d! = ~15:d~%" n n!)
+            (let* ((log-n! (log n! 10))
+                   (e (floor log-n!))
+                   (b (expt 10 (- log-n! e))))
+                (format t "~2d! = ~,3f x 10^~d~%" n b e))
+        )
+    )
+)
+
+(dotimes (n 6) (printfac (* 3 n) 'fac))
+(dotimes (n 6) (printfac (* 3 n)))
+(dotimes (n 6) (printfac (* 3 n) 'fac-efficient))
+(printfac 10000)
+; (printfac 10000 'fac) ; would overflow
+(printfac 10000 'fac-efficient)
+
